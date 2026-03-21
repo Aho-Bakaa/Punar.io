@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bill-ocr-rag"
+version = "0.1.0"
+description = "High-accuracy bill OCR pipeline with PaddleOCR-first extraction and validation"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "OCR Bills" }
+]
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
+  "python-multipart>=0.0.9",
+  "pydantic>=2.8.0",
+  "numpy>=1.26.0,<2.0.0",
+  "opencv-python==4.6.0.66",
+  "pillow>=10.4.0",
+  "paddleocr==2.7.3",
+  "paddlepaddle==2.6.2",
+  "python-dateutil>=2.9.0"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
