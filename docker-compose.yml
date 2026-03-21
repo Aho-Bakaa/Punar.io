@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: recircle-passport-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: recircle_passport
+    ports:
+      - "5433:5432"
+    volumes:
+      - passport-pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: recircle-passport-backend
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/recircle_passport
+    depends_on:
+      - db
+    volumes:
+      - ./contracts:/app/contracts:ro
+
+volumes:
+  passport-pgdata:

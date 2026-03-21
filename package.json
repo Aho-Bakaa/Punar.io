@@ -1,0 +1,13 @@
+{
+  "name": "recircle-device-passport",
+  "version": "1.0.0",
+  "description": "Smart contract deployment for ReCircle Device Passport event logging",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "deploy:amoy": "npx hardhat run scripts/deploy.js --network amoy"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  }
+}
