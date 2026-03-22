@@ -4,7 +4,7 @@
 
 ---
 
-## 📖 Project Overview
+# 📖 Project Overview
 
 **punar.io** is a multi‑sided marketplace designed to solve the e‑waste crisis by incentivizing users to “disown” their old electronics. By integrating **Blockchain for provenance**, **AI for verification**, and a **Mock Banking API**, we turn environmental disposal into a rewarded financial transaction.
 
@@ -16,7 +16,7 @@ The Eco-System Core
 - **Backend:** Node.js (Express) or Python (FastAPI) for marketplace orchestration.
 - **Database:** MongoDB for transactional metadata.
 
-## Trust & Automation Layer
+# Trust & Automation Layer
 - **Blockchain:** Polygon – Used to record the immutable lifecycle of the item (provenance).  
   Every item is minted as a unique Asset ID in the platform backend, and each major event is hashed and stored on‑chain.
 - **AI/OCR:** PaddleOCR – Automatically extracts Brand, Model, and Purchase Date from purchase receipts to prevent fraud.
