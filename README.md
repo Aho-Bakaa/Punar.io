@@ -38,6 +38,10 @@ A mock bank API that converts e-waste value into credit card reward points. Perf
 
 ## Install Dependencies
 
+```bash
+   pip install -r requirements.txt
+```
+
 
 
 ## 🔧 How to Use
