@@ -17,6 +17,9 @@ A stateless FastAPI microservice for analyzing e-waste device compliance, predic
 2. Run the FastAPI development server:
    ```bash
    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+##   🛠️ Enhanced API Documentation (Technical)🧪
+Advanced Calculation LogicThe engine utilizes a Stateless Analysis Pattern. This means the API is horizontally scalable—you could run 100 instances of this microservice during a massive "National E-Waste Drive" without a database bottleneck.Sample Calculation Flow:$$Accountable\_Weight = Gross\_Weight \times (Condition\_Factor)$$$$CO_2\_Saved = (Weight \times Material\_Purity) \times Emissions\_Offset\_Coefficient$$
    ```
 
 3. View standard API Documentation:
