@@ -19,11 +19,6 @@ A mock bank API that converts e-waste value into credit card reward points. Perf
 
 ---
 
-## 🚀 Quick Start
-
-### API Base URL
-
-http://localhost:3001
 
 
 ---
