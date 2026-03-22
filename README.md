@@ -62,6 +62,7 @@ Based on our system design, the device follows a strictly logged path:
 
 ## 🏗️ Service Architecture
 
+<img width="1600" height="491" alt="image" src="https://github.com/user-attachments/assets/3d22e212-15ca-4770-8ed9-8991edfffb8c" />
 
 ---
 
@@ -78,6 +79,7 @@ Our `epr-api` calculates the "Green Value" of every transaction using the follow
 ## 🚀 Installation & Setup
 
 ## 📋 API Endpoints
+<img width="1600" height="415" alt="image" src="https://github.com/user-attachments/assets/55938748-6f2d-4724-9ee9-13b74e4d5eae" />
 
 
 ### Rapid Deployment
