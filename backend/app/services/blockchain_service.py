@@ -38,48 +38,53 @@ class BlockchainService:
     def __init__(self) -> None:
         if self._initialised:
             return
+        try:
+            # ── Web3 provider ────────────────────────────────────
+            self.web3 = Web3(
+                Web3.HTTPProvider(
+                    settings.polygon_rpc_url,
+                    request_kwargs={"timeout": 60},
+                )
+            )
+            # Polygon is a PoA chain — inject middleware so extraData > 32 bytes
+            # doesn't break block parsing.
+            self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+
+            # ── Wallets ──────────────────────────────────────────
+            self.platform_account = self.web3.eth.account.from_key(
+                settings.platform_private_key
+            )
+            self._wallet_map: dict[str, Any] = {
+                "PLATFORM_WALLET": self.platform_account,
+            }
+            if settings.partner_wallet_key:
+                self._wallet_map["PARTNER_WALLET"] = (
+                    self.web3.eth.account.from_key(settings.partner_wallet_key)
+                )
+            if settings.agent_wallet_key:
+                self._wallet_map["AGENT_WALLET"] = (
+                    self.web3.eth.account.from_key(settings.agent_wallet_key)
+                )
+            if settings.recycler_wallet_key:
+                self._wallet_map["RECYCLER_WALLET"] = (
+                    self.web3.eth.account.from_key(settings.recycler_wallet_key)
+                )
+
+            # ── Contract ─────────────────────────────────────────
+            abi_path = Path(settings.contract_abi_path)
+            with abi_path.open("r", encoding="utf-8") as fp:
+                abi = json.load(fp)
+
+            self.contract = self.web3.eth.contract(
+                address=Web3.to_checksum_address(settings.contract_address),
+                abi=abi,
+            )
+        except Exception:
+            # Keep singleton reusable if startup fails once (e.g., bad ABI path).
+            self._initialised = False
+            raise
+
         self._initialised = True
-
-        # ── Web3 provider ────────────────────────────────────
-        self.web3 = Web3(
-            Web3.HTTPProvider(
-                settings.polygon_rpc_url,
-                request_kwargs={"timeout": 60},
-            )
-        )
-        # Polygon is a PoA chain — inject middleware so extraData > 32 bytes
-        # doesn't break block parsing.
-        self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
-
-        # ── Wallets ──────────────────────────────────────────
-        self.platform_account = self.web3.eth.account.from_key(
-            settings.platform_private_key
-        )
-        self._wallet_map: dict[str, Any] = {
-            "PLATFORM_WALLET": self.platform_account,
-        }
-        if settings.partner_wallet_key:
-            self._wallet_map["PARTNER_WALLET"] = (
-                self.web3.eth.account.from_key(settings.partner_wallet_key)
-            )
-        if settings.agent_wallet_key:
-            self._wallet_map["AGENT_WALLET"] = (
-                self.web3.eth.account.from_key(settings.agent_wallet_key)
-            )
-        if settings.recycler_wallet_key:
-            self._wallet_map["RECYCLER_WALLET"] = (
-                self.web3.eth.account.from_key(settings.recycler_wallet_key)
-            )
-
-        # ── Contract ─────────────────────────────────────────
-        abi_path = Path(settings.contract_abi_path)
-        with abi_path.open("r", encoding="utf-8") as fp:
-            abi = json.load(fp)
-
-        self.contract = self.web3.eth.contract(
-            address=Web3.to_checksum_address(settings.contract_address),
-            abi=abi,
-        )
 
     # ------------------------------------------------------------------
     # Internal helpers
