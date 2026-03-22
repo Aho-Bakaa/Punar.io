@@ -42,22 +42,5 @@ The Eco-System Core
 
 # 🔄 System Workflow
 
-```mermaid
-flowchart TD
-    User -->|Submits device| Platform
-    Platform -->|Logs on blockchain| Chain
-    
-    Platform -->|Assigns to partner| Partner
-    
-    Partner -->|Intake & verification| Platform
-    
-    Platform -->|AI triage| Decision{Refurbish or Recycle?}
-    
-    Decision -->|Refurbish| Refurb[Refurbish & Test]
-    Decision -->|Recycle| Recycle[Send to Recycler]
-    
-    Refurb -->|Resold / Credited| Outcome1[User gets ReCoins + CO2 saved]
-    Recycle -->|Processed & reported| Outcome2[Recycler pays fee + EPR certificates]
-    
-    Outcome1 --> OEM[Reports to OEM / Brand]
-    Outcome2 --> OEM
+<img width="1237" height="1051" alt="image" src="https://github.com/user-attachments/assets/ff788628-37e8-448f-93b9-a2e77fc37256" />
+
