@@ -11,6 +11,46 @@ Our platform connects users with local technical shops for item verification, ma
 
 ---
 
+```mermaid
+---
+config:
+  layout: elk
+---
+flowchart TD
+    U[User] -->|1. Uploads device details<br/>photos + bill/box IMEI| P[punar.io Platform]
+
+    P -->|2. OCR parses bill<br/>brand, model, date| P
+    P -->|Log hash: SUBMITTED| BC[Blockchain<br/>Event Log]
+
+    P -->|3. Assign to nearest<br/>partner shop / pickup agent| S[Partner Technician]
+
+    S -->|4. Physical intake<br/>IMEI match, weight, basic checks| P
+    P -->|Log hash: INTAKE| BC
+
+    S -->|5. Detailed manual triage<br/>functionality + parts| D{Technician decision}
+    D -->|Fully functional<br/>minor repair| RF1[Fully Refurbished<br/>Device]
+    D -->|Non-functional<br/>but parts good| RF2[Parts Harvested<br/>Spare Modules]
+    D -->|End-of-life<br/>no usable parts| RC[Batch & Send<br/>to Recycler]
+
+    RF1 -->|6a. Listed on marketplace<br/>as working device| M1[Marketplace Listing:<br/>Fully Functional]
+    RF2 -->|6b. Parts listed on<br/>marketplace as spares| M2[Marketplace Listing:<br/>Spare Parts]
+    RC  -->|6c. Processed by<br/>authorized recycler| R[Recycler]
+
+    M1 -->|User rewarded<br/>ReCoins, CO₂ saved logged| OUT1[Impact Data<br/>Refurb devices]
+    M2 -->|User rewarded<br/>ReCoins lower, CO₂ saved logged| OUT2[Impact Data<br/>Parts reuse]
+    R  -->|Weight + batch data<br/>for EPR & material recovery| OUT3[Impact Data<br/>Recycling]
+
+    OUT1 -->|Aggregated reports<br/>& dashboards| OEM[OEM / Brand<br/>& Compliance Stakeholders]
+    OUT2 --> OEM
+    OUT3 --> OEM
+    P -->|Log hash: TRIAGE| BC
+    P -->|Log hash: REFURBISHED| BC
+    P -->|Log hash: PARTS HARVESTED| BC
+    P -->|Log hash: RECYCLED| BC
+
+    class BC fill:#ede7f6,stroke:#5e35b1,color:#311b92,stroke-width:1.5px
+
+
 ## 🛠️ Technical Stack
 
 ### **The Eco-System Core**
