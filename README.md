@@ -1,6 +1,6 @@
 # EPR Compliance System API
 
-A stateless FastAPI microservice for analyzing e-waste device compliance, predicting carbon impact, and estimating material recovery.
+A stateless FastAPI microservice for analyzing e-waste device compliance, predicting carbon impact, and estimating material recovery based on CPCB standards.
 
 ## Features
 - **Stateless Analysis Engine**: Exposes `/api/analyze/device` and `/api/analyze/batch` endpoints that process physical devices entirely in-memory without requiring database writes.
