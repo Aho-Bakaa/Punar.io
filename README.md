@@ -2,6 +2,23 @@
 
 A mock bank API that converts e-waste value into credit card reward points. Perfect for recycling platforms and hackathon projects.
 
+---
+
+## 🌟 Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **💰 Instant Points Conversion** | ₹1 = 10 points. A ₹500 device instantly becomes 5,000 reward points |
+| **💳 Multi-Bank Support** | HDFC, ICICI, SBI with built-in card validation and test cards |
+| **🔄 Idempotent Processing** | Unique reference IDs prevent duplicate points issuance |
+| **📊 Transaction Tracking** | Full status history with unique transaction IDs |
+| **🔌 Webhook Ready** | Settlement notifications with retry logic |
+| **🛡️ Fraud Prevention** | Card validation, limits, duplicate checks, and risk scoring |
+| **📖 Swagger UI** | Interactive API documentation |
+| **🌐 CORS Enabled** | Ready for frontend integration |
+
+---
+
 ## 🚀 Quick Start
 
 ### API Base URL
