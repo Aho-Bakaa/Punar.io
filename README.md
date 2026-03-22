@@ -4,7 +4,7 @@
 ### *Blockchain-Proven, AI-Verified, EPR-Compliant.*
 
 **Punar.io** (Sanskrit for "Again") is a decentralized lifecycle management platform for e-waste. We bridge the gap between consumers, local micro-entrepreneurs (technicians), and global compliance standards (CPCB/EPR) using a transparent, trustless architecture.
-
+https://final-project-nine-pearl.vercel.app/
 ---
 
 ## 🏗️ The Unified Architecture
