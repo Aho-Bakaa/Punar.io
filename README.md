@@ -1,18 +1,33 @@
-# Credit Card Reward System - Mock Bank API
+# 💳 Credit Card Reward System - Mock Bank API
 
-A mock bank API for the E-Waste Credit Card Reward System hackathon project.
+A mock bank API that converts e-waste value into credit card reward points. Perfect for recycling platforms and hackathon projects.
 
-## Features
+## 🚀 Quick Start
 
-- 🏦 Mock bank API endpoints for issuing reward points
-- ⏰ Simulated settlement with configurable delays (5-10 seconds)
-- 🔄 Automatic webhook notifications
-- 💳 Multiple mock cards for testing
-- 📊 Admin dashboard for monitoring
-- 📝 Full audit logging
+### API Base URL
 
-## Quick Start
+http://localhost:3001
 
-1. Install dependencies:
+
+---
+
+## 📋 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Check if API is running |
+| GET | `/` | Welcome message |
+| POST | `/api/rewards/issue` | Issue reward points |
+| GET | `/api/rewards/transaction/{id}` | Get transaction status |
+| GET | `/api/rewards/banks` | List supported banks |
+| GET | `/api/admin/dashboard` | System statistics |
+| GET | `/api/admin/transactions` | All transactions |
+
+---
+
+## 🔧 How to Use
+
+### 1. Check if API is Running
+
 ```bash
-pip install -r requirements.txt
+curl https://localhost:3001/health
