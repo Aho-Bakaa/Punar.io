@@ -22,6 +22,10 @@ The Eco-System Core
 - **AI/OCR:** PaddleOCR – Automatically extracts Brand, Model, and Purchase Date from purchase receipts to prevent fraud.
 - **Fintech:** Mock Banking REST API – A custom‑built service to simulate Credit Card‑style reward‑point transactions in a sandboxed environment.
 
+# 🔄 System Workflow
+
+<img width="1376" height="1170" alt="image" src="https://github.com/user-attachments/assets/3743b8b6-4b49-40df-8a65-2e0c2ed007e0" />
+
 # 🚀 Key Features
 1. **Rule‑Based Onboarding**  
    Smart Assessment: Users answer condition‑based questions that dynamically adjust based on the device type.  
@@ -40,7 +44,4 @@ The Eco-System Core
    - **Parts‑Harvested Track:** Non‑functional devices with usable modules contribute spare parts to the marketplace.  
    - **Recycle Track:** Flagged‑for‑discard items are aggregated for bulk pickup; shops earn incentives as collection hubs.
 
-# 🔄 System Workflow
-
-<img width="1237" height="1051" alt="image" src="https://github.com/user-attachments/assets/ff788628-37e8-448f-93b9-a2e77fc37256" />
 
