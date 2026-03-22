@@ -36,9 +36,14 @@ A mock bank API that converts e-waste value into credit card reward points. Perf
 
 ---
 
+## Install Dependencies
+
+
+
 ## 🔧 How to Use
 
 ### 1. Check if API is Running
 
 ```bash
 curl https://localhost:3001/health
+
