@@ -1,7 +1,7 @@
 {
-  "name": "recircle-device-passport",
+  "name": "punar-device-passport",
   "version": "1.0.0",
-  "description": "Smart contract deployment for ReCircle Device Passport event logging",
+  "description": "Smart contract deployment for punar Device Passport event logging",
   "scripts": {
     "compile": "npx hardhat compile",
     "deploy:amoy": "npx hardhat run scripts/deploy.js --network amoy"
