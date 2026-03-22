@@ -96,7 +96,7 @@ class BlockchainService:
                 "Wallet role '%s' not configured — falling back to platform wallet.",
                 wallet_role,
             )
-            return self.platform_account
+            raise ValueError(f"Wallet role '{wallet_role}' is not configured.")
         return account
 
     async def _send_tx(
@@ -185,8 +185,49 @@ class BlockchainService:
         )
         return tx_hash, data_hash_hex
 
+    def _decode_event_log(self, log: Any) -> dict[str, Any]:
+        """Decode a single ``EventLogged`` log into a normalised dict."""
+
+        decoded = self.contract.events.EventLogged().process_log(log)
+        args = decoded["args"]
+        return {
+            "device_id": args["deviceId"],
+            "event_type": args["eventType"],
+            "data_hash": "0x" + args["dataHash"].hex(),
+            "actor": args["actor"],
+            "timestamp": int(args["timestamp"]),
+            "tx_hash": log["transactionHash"].hex(),
+            "block_number": log["blockNumber"],
+        }
+
+    async def get_event_by_tx_hash(self, tx_hash: str) -> dict[str, Any] | None:
+        """Fetch and decode the contract event emitted by a specific tx hash."""
+
+        tx_hash_hex = tx_hash if tx_hash.startswith("0x") else f"0x{tx_hash}"
+        try:
+            receipt = await asyncio.to_thread(
+                self.web3.eth.get_transaction_receipt,
+                tx_hash_hex,
+            )
+        except Exception:
+            return None
+
+        for log in receipt["logs"]:
+            if log["address"].lower() != self.contract.address.lower():
+                continue
+            try:
+                return self._decode_event_log(log)
+            except Exception:
+                continue
+
+        return None
+
     async def get_device_history(
-        self, device_id: str
+        self,
+        device_id: str,
+        *,
+        from_block: int | None = None,
+        to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Query ``eth_getLogs`` for all ``EventLogged`` events matching *device_id*.
 
@@ -200,31 +241,25 @@ class BlockchainService:
             text="EventLogged(string,string,bytes32,address,uint256)"
         )
 
+        query_from_block = 0 if from_block is None else from_block
+
         raw_logs = await asyncio.to_thread(
             self.web3.eth.get_logs,
             {
                 "address": self.contract.address,
-                "topics": [event_signature.hex(), topic_hash.hex()],
-                "fromBlock": 0,
-                "toBlock": "latest",
+                # JSON-RPC topics must be 0x-prefixed hex strings.
+                "topics": [
+                    self.web3.to_hex(event_signature),
+                    self.web3.to_hex(topic_hash),
+                ],
+                "fromBlock": query_from_block,
+                "toBlock": to_block,
             },
         )
 
         events: list[dict[str, Any]] = []
         for log in raw_logs:
-            decoded = self.contract.events.EventLogged().process_log(log)
-            args = decoded["args"]
-            events.append(
-                {
-                    "device_id": args["deviceId"],
-                    "event_type": args["eventType"],
-                    "data_hash": "0x" + args["dataHash"].hex(),
-                    "actor": args["actor"],
-                    "timestamp": int(args["timestamp"]),
-                    "tx_hash": log["transactionHash"].hex(),
-                    "block_number": log["blockNumber"],
-                }
-            )
+            events.append(self._decode_event_log(log))
 
         # Sort by block number (chronological)
         events.sort(key=lambda e: e["block_number"])
@@ -235,6 +270,9 @@ class BlockchainService:
         device_id: str,
         event_type: str,
         payload_dict: dict[str, Any],
+        *,
+        from_block: int | None = None,
+        to_block: int | str = "latest",
     ) -> dict[str, Any]:
         """Re-compute hash and check it against the on-chain record.
 
@@ -243,7 +281,11 @@ class BlockchainService:
         """
 
         expected_hash = compute_payload_hash(payload_dict)
-        history = await self.get_device_history(device_id)
+        history = await self.get_device_history(
+            device_id,
+            from_block=from_block,
+            to_block=to_block,
+        )
 
         for event in history:
             if event["event_type"] == event_type:

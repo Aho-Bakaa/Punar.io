@@ -24,7 +24,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.security import require_admin_key
+from app.core.security import require_admin_key, require_event_key
 from app.db.session import get_session
 from app.models.entities import BlockchainDeadLetter, DeviceEvent
 from app.schemas.dto import (
@@ -52,6 +52,26 @@ from app.utils.hashing import compute_payload_hash
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["events"])
+
+require_platform_event_key = require_event_key("PLATFORM_WALLET")
+require_partner_event_key = require_event_key("PARTNER_WALLET")
+require_agent_event_key = require_event_key("AGENT_WALLET")
+require_recycler_event_key = require_event_key("RECYCLER_WALLET")
+
+EVENT_SIGNER_ROLE_BY_EVENT_TYPE = {
+    "DEVICE_SUBMITTED": "PLATFORM_WALLET",
+    "DEVICE_DROPPED_OFF": "PARTNER_WALLET",
+    "DEVICE_PICKED_UP": "AGENT_WALLET",
+    "DEVICE_GRADED": "PARTNER_WALLET",
+    "DATA_WIPED": "PARTNER_WALLET",
+    "DEVICE_REPAIRED": "PARTNER_WALLET",
+    "DEVICE_LISTED": "PARTNER_WALLET",
+    "DEVICE_SOLD": "PLATFORM_WALLET",
+    "DEVICE_BATCHED_FOR_RECYCLING": "PARTNER_WALLET",
+    "BATCH_DISPATCHED_TO_RECYCLER": "PLATFORM_WALLET",
+    "RECYCLER_ACKNOWLEDGED_RECEIPT": "RECYCLER_WALLET",
+    "EPR_CERTIFICATE_ISSUED": "PLATFORM_WALLET",
+}
 
 
 # ────────────────────────────────────────────────────────────
@@ -143,14 +163,8 @@ async def _insert_and_log(
     try:
         chain = BlockchainService()
         actor_wallet = chain._resolve_account(wallet_role).address
-    except Exception as exc:
-        logger.warning(
-            "Could not resolve actor wallet for role %s while queuing %s/%s: %s",
-            wallet_role,
-            device_id,
-            event_type,
-            exc,
-        )
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     event = DeviceEvent(
         device_id=device_id,
@@ -199,6 +213,7 @@ def _event_response(event: DeviceEvent) -> EventResponse:
 async def device_submitted(
     payload: DeviceSubmittedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_platform_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 1 — DEVICE_SUBMITTED. Actor: PLATFORM_WALLET."""
@@ -213,6 +228,7 @@ async def device_submitted(
 async def device_dropped_off(
     payload: DeviceDroppedOffPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_partner_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 2A — DEVICE_DROPPED_OFF. Actor: PARTNER_WALLET."""
@@ -227,6 +243,7 @@ async def device_dropped_off(
 async def device_picked_up(
     payload: DevicePickedUpPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_agent_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 2B — DEVICE_PICKED_UP. Actor: AGENT_WALLET."""
@@ -241,6 +258,7 @@ async def device_picked_up(
 async def device_graded(
     payload: DeviceGradedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_partner_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 3 — DEVICE_GRADED. Actor: PARTNER_WALLET."""
@@ -255,6 +273,7 @@ async def device_graded(
 async def data_wiped(
     payload: DataWipedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_partner_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 4 — DATA_WIPED. Actor: PARTNER_WALLET."""
@@ -269,6 +288,7 @@ async def data_wiped(
 async def device_repaired(
     payload: DeviceRepairedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_partner_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 5 — DEVICE_REPAIRED (refurb track). Actor: PARTNER_WALLET."""
@@ -283,6 +303,7 @@ async def device_repaired(
 async def device_listed(
     payload: DeviceListedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_partner_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 6 — DEVICE_LISTED (refurb track). Actor: PARTNER_WALLET."""
@@ -297,6 +318,7 @@ async def device_listed(
 async def device_sold(
     payload: DeviceSoldPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_platform_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 7 — DEVICE_SOLD (refurb track). Actor: PLATFORM_WALLET."""
@@ -311,6 +333,7 @@ async def device_sold(
 async def device_batched(
     payload: DeviceBatchedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_partner_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 8 — DEVICE_BATCHED_FOR_RECYCLING (scrap track). Actor: PARTNER_WALLET."""
@@ -325,6 +348,7 @@ async def device_batched(
 async def batch_dispatched(
     payload: BatchDispatchedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_platform_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 9 — BATCH_DISPATCHED_TO_RECYCLER (batch-level). Actor: PLATFORM_WALLET."""
@@ -339,6 +363,7 @@ async def batch_dispatched(
 async def recycler_acknowledged(
     payload: RecyclerAcknowledgedPayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_recycler_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 10 — RECYCLER_ACKNOWLEDGED_RECEIPT (batch-level). Actor: RECYCLER_WALLET."""
@@ -353,6 +378,7 @@ async def recycler_acknowledged(
 async def epr_certificate(
     payload: EprCertificatePayload,
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_platform_event_key),
     session: AsyncSession = Depends(get_session),
 ) -> EventResponse:
     """EVENT 11 — EPR_CERTIFICATE_ISSUED (batch-level). Actor: PLATFORM_WALLET."""
@@ -375,9 +401,9 @@ async def verify_device(
 ) -> VerifyDeviceResponse:
     """Return full device history with per-event verification status.
 
-    For each event stored in the DB, checks whether a matching
-    ``blockchain_tx_hash`` exists and whether the stored hash matches
-    the recomputed hash of the payload.
+    For each event stored in the DB, loads the linked transaction receipt
+    from Polygon and checks that the on-chain event matches the stored
+    device id, event type, actor, and recomputed payload hash.
     """
 
     rows = (
@@ -392,6 +418,7 @@ async def verify_device(
         raise HTTPException(status_code=404, detail="Device not found")
 
     base_url = settings.polygonscan_base_url.rstrip("/")
+    chain = BlockchainService()
     entries: list[VerificationEventEntry] = []
 
     for row in rows:
@@ -400,12 +427,41 @@ async def verify_device(
             status = "NOT_FOUND"
             scan_url = None
         else:
+            tx_hash = row.blockchain_tx_hash
+            expected_tx_hash = tx_hash if tx_hash.startswith("0x") else f"0x{tx_hash}"
+            scan_url = f"{base_url}/tx/{expected_tx_hash}"
+
             recomputed = compute_payload_hash(row.payload_json)
-            if row.blockchain_hash and recomputed == row.blockchain_hash:
-                status = "VERIFIED"
+            on_chain_event = await chain.get_event_by_tx_hash(tx_hash)
+
+            if on_chain_event is None:
+                status = "NOT_FOUND"
             else:
-                status = "HASH_MISMATCH"
-            scan_url = f"{base_url}/tx/0x{row.blockchain_tx_hash}" if not row.blockchain_tx_hash.startswith("0x") else f"{base_url}/tx/{row.blockchain_tx_hash}"
+                expected_role = EVENT_SIGNER_ROLE_BY_EVENT_TYPE.get(row.event_type)
+                expected_actor = row.actor_wallet
+                if expected_actor is None and expected_role is not None:
+                    try:
+                        expected_actor = chain._resolve_account(expected_role).address
+                    except ValueError:
+                        expected_actor = None
+
+                actor_matches = True
+                if expected_actor is not None:
+                    actor_matches = (
+                        on_chain_event["actor"].lower() == expected_actor.lower()
+                    )
+
+                hash_matches = (
+                    on_chain_event["data_hash"].replace("0x", "") == recomputed
+                )
+                device_matches = on_chain_event["device_id"] == row.device_id
+                event_matches = on_chain_event["event_type"] == row.event_type
+                tx_matches = on_chain_event["tx_hash"].lower() == expected_tx_hash.lower()
+
+                if all([actor_matches, hash_matches, device_matches, event_matches, tx_matches]):
+                    status = "VERIFIED"
+                else:
+                    status = "HASH_MISMATCH"
 
         entries.append(
             VerificationEventEntry(

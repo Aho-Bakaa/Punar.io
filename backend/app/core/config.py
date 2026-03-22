@@ -47,6 +47,22 @@ class Settings(BaseSettings):
     )
 
     # ── Auth ─────────────────────────────────────────────
+    platform_event_api_key: str = Field(
+        default="change-me-platform-event",
+        alias="PLATFORM_EVENT_API_KEY",
+    )
+    partner_event_api_key: str = Field(
+        default="change-me-partner-event",
+        alias="PARTNER_EVENT_API_KEY",
+    )
+    agent_event_api_key: str = Field(
+        default="change-me-agent-event",
+        alias="AGENT_EVENT_API_KEY",
+    )
+    recycler_event_api_key: str = Field(
+        default="change-me-recycler-event",
+        alias="RECYCLER_EVENT_API_KEY",
+    )
     admin_api_key: str = Field(default="change-me-admin", alias="ADMIN_API_KEY")
 
     # ── Public URLs ──────────────────────────────────────
@@ -58,6 +74,20 @@ class Settings(BaseSettings):
         default="http://localhost:8001",
         alias="PUBLIC_BASE_URL",
     )
+
+    def event_api_key_for_role(self, wallet_role: str) -> str:
+        """Return the configured write API key for a wallet role."""
+
+        mapping = {
+            "PLATFORM_WALLET": self.platform_event_api_key,
+            "PARTNER_WALLET": self.partner_event_api_key,
+            "AGENT_WALLET": self.agent_event_api_key,
+            "RECYCLER_WALLET": self.recycler_event_api_key,
+        }
+        try:
+            return mapping[wallet_role]
+        except KeyError as exc:
+            raise ValueError(f"Unsupported wallet role: {wallet_role}") from exc
 
 
 settings = Settings()

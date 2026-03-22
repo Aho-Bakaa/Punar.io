@@ -10,6 +10,45 @@ pragma solidity ^0.8.20;
  *         eth_getLogs.
  */
 contract DevicePassport {
+    address public owner;
+    mapping(address => bool) public authorizedCallers;
+
+    error NotOwner();
+    error NotAuthorizedCaller();
+
+    constructor(
+        address platformWallet,
+        address partnerWallet,
+        address agentWallet,
+        address recyclerWallet
+    ) {
+        owner = msg.sender;
+        authorizedCallers[platformWallet] = true;
+
+        if (partnerWallet != address(0)) {
+            authorizedCallers[partnerWallet] = true;
+        }
+        if (agentWallet != address(0)) {
+            authorizedCallers[agentWallet] = true;
+        }
+        if (recyclerWallet != address(0)) {
+            authorizedCallers[recyclerWallet] = true;
+        }
+    }
+
+    modifier onlyOwner() {
+        if (msg.sender != owner) {
+            revert NotOwner();
+        }
+        _;
+    }
+
+    modifier onlyAuthorizedCaller() {
+        if (!authorizedCallers[msg.sender]) {
+            revert NotAuthorizedCaller();
+        }
+        _;
+    }
 
     /**
      * @notice Emitted every time a lifecycle event is recorded.
@@ -37,7 +76,7 @@ contract DevicePassport {
         string memory deviceId,
         string memory eventType,
         bytes32 dataHash
-    ) public {
+    ) public onlyAuthorizedCaller {
         emit EventLogged(
             deviceId,
             eventType,
@@ -45,5 +84,9 @@ contract DevicePassport {
             msg.sender,
             block.timestamp
         );
+    }
+
+    function setAuthorizedCaller(address caller, bool allowed) external onlyOwner {
+        authorizedCallers[caller] = allowed;
     }
 }
